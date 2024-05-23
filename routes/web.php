@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CoreController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [CoreController::class, 'index'])->name('core.index');
+Route::post('/process', [CoreController::class, 'process'])->name('core.process');
