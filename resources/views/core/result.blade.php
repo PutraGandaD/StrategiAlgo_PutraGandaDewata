@@ -52,7 +52,7 @@
             <th>Weight</th>
             <th>Value (Size/Weight + Bonus)</th>
         </tr>
-        @foreach ($resultGD['items'] as $item)
+        @foreach ($resultGDW['items'] as $item)
         <tr>
             <td>{{ $item[2] }}</td>
             <td>{{ $item[0] }}</td>
@@ -61,8 +61,8 @@
         @endforeach
         <tr>
             <th>Total</th>
-            <th>{{ $resultGD['total_weight'] }}</th>
-            <th>{{ $resultGD['total_value'] }}</th>
+            <th>{{ $resultGDW['total_weight'] }}</th>
+            <th>{{ $resultGDW['total_value'] }}</th>
         </tr>
     </table>
     <a href="{{ route('core.index') }}">Back</a>

@@ -20,10 +20,12 @@ class CoreController extends Controller
         $capacity = $request->input('capacity');
         list($weights, $values, $labels) = $this->readCsvFile($file->getRealPath());
 
-        $resultGD = $this->knapsackGD($weights, $values, $labels, $capacity);
+        $resultGDW = $this->knapsackGD_byWeight($weights, $values, $labels, $capacity);
+        $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $capacity);
+        $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $capacity);
         $resultDP = $this->knapsackDP($weights, $values, $capacity);
 
-        return view('core.result', compact('resultDP', 'resultGD', 'weights', 'values', 'labels'));
+        return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels'));
     }
 
     private function readCsvFile($filepath)
@@ -36,22 +38,16 @@ class CoreController extends Controller
             $header = fgetcsv($handle, 1000, ",");
             $weightIndex = array_search('Weight (g)', $header);
             $sizeIndex = array_search('Size (cm)', $header);
-            $blemishesIndex = array_search('Blemishes (Y/N)', $header);
+            $qualityIndex = array_search('Quality (1-5)', $header);
             $labelIndex = array_search('labels', $header);
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $weight = $data[$weightIndex]; // convert to float
                 $size = $data[$sizeIndex]; // convert to float
-                $blemishes = $data[$blemishesIndex];
+                $quality = $data[$qualityIndex];
                 $label = $data[$labelIndex];
 
-                // Initialize value with size divided by weight
-                $value = $weight / $size;
-
-                // // If there are no blemishes, add 1 to the value
-                // if (strtoupper(substr($blemishes, 0, 1)) == 'N') {
-                //     $value += 1;
-                // }
+                $value = $quality;
 
                 // Add the calculated values to arrays
                 $weights[] = $weight;
@@ -65,7 +61,7 @@ class CoreController extends Controller
         return [$weights, $values, $labels];
     }
 
-    public function knapsackGD($weights, $values, $labels, $capacity) {
+    public function knapsackGD_byWeight($weights, $values, $labels, $capacity) {
         // Combine weight, value, and label into single items array
         $items = array_map(null, $weights, $values, $labels);
 
@@ -93,68 +89,61 @@ class CoreController extends Controller
         ];
     }
 
-    // private function knapsackDP(array $weights, array $values, int $capacity): array
-    // {
-    //     $n = count($weights); // number of items
+    public function knapsackGD_byValue($weights, $values, $labels, $capacity) {
+        // Combine weight, value, and label into single items array
+        $items = array_map(null, $weights, $values, $labels);
 
-    //     // Create a table to store maximum achievable values and a table to track included items
-    //     $dp = array_fill(0, $n + 1, array_fill(0, $capacity + 1, 0));
-    //     $included = array_fill(0, $n + 1, array_fill(0, $capacity + 1, false));
+        // Sort items by value in descending order
+        usort($items, function($a, $b) {
+            return $b[1] <=> $a[1];
+        });
 
-    //     // Fill the DP table for all capacities and items
-    //     for ($i = 1; $i <= $n; $i++) {
-    //         for ($w = 1; $w <= $capacity; $w++) {
-    //             if ($weights[$i - 1] > $w) {
-    //                 // If item weight is greater than capacity, inherit from previous item
-    //                 $dp[$i][$w] = $dp[$i - 1][$w];
-    //             } else {
-    //                 // Choose the maximum value between including or excluding the current item
-    //                 $excludeValue = $dp[$i - 1][$w];
-    //                 $includeValue = $values[$i - 1] + $dp[$i - 1][$w - $weights[$i - 1]];
-    //                 if ($includeValue > $excludeValue) {
-    //                     $dp[$i][$w] = $includeValue;
-    //                     $included[$i][$w] = true; // Mark item as included
-    //                 } else {
-    //                     $dp[$i][$w] = $excludeValue;
-    //                 }
-    //             }
-    //         }
-    //     }
+        $totalWeight = 0.0;
+        $totalValue = 0.0;
+        $itemsIncluded = [];
 
-    //     // Calculate the total weight based on included items
-    //     $totalWeight = 0;
-    //     for ($i = 0; $i < $n; $i++) {
-    //         if ($included[$i + 1][$capacity]) {
-    //             $totalWeight += $weights[$i];
-    //         }
-    //     }
+        foreach ($items as $item) {
+            if ($totalWeight + $item[0] <= $capacity) {
+                $itemsIncluded[] = $item;
+                $totalWeight += $item[0];
+                $totalValue += $item[1];
+            }
+        }
 
-    //     // Find the included items using backtracking
-    //     $includedItems = $this->backtrackDP($weights, $included, $capacity, $n);
+        return [
+            'items' => $itemsIncluded,
+            'total_value' => $totalValue,
+            'total_weight' => $totalWeight
+        ];
+    }
 
-    //     return [
-    //         'items' => $includedItems,
-    //         'total_value' => $dp[$n][$capacity],
-    //         'total_weight' => $totalWeight,
-    //     ];
-    // }
+    public function knapsackGD_byDensity($weights, $values, $labels, $capacity) {
+        // Combine weight, value, and label into single items array
+        $items = array_map(null, $weights, $values, $labels);
 
-    // private function backtrackDP(array $weights, array $included, int $capacity, int $currentIndex): array
-    // {
-    //     $includedItems = [];
-    //     if ($currentIndex === 0 || $capacity === 0) {
-    //         return $includedItems;
-    //     }
+        // Sort items by density (value/weight) in descending order
+        usort($items, function($a, $b) {
+            return ($b[1] / $b[0]) <=> ($a[1] / $a[0]);
+        });
 
-    //     // If the current item is included, add it and backtrack for the remaining capacity
-    //     if ($included[$currentIndex][$capacity]) {
-    //         $includedItems[] = $currentIndex - 1;
-    //         return array_merge($includedItems, $this->backtrackDP($weights, $included, $capacity - $weights[$currentIndex - 1], $currentIndex - 1));
-    //     } else {
-    //         // If the current item is excluded, backtrack without it
-    //         return $this->backtrackDP($weights, $included, $capacity, $currentIndex - 1);
-    //     }
-    // }
+        $totalWeight = 0.0;
+        $totalValue = 0.0;
+        $itemsIncluded = [];
+
+        foreach ($items as $item) {
+            if ($totalWeight + $item[0] <= $capacity) {
+                $itemsIncluded[] = $item;
+                $totalWeight += $item[0];
+                $totalValue += $item[1];
+            }
+        }
+
+        return [
+            'items' => $itemsIncluded,
+            'total_value' => $totalValue,
+            'total_weight' => $totalWeight
+        ];
+    }
 
     private function knapsackDP(array $weights, array $values, int $capacity): array
     {
