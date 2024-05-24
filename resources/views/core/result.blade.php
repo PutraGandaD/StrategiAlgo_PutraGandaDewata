@@ -66,11 +66,11 @@
                         <th>Weight (g)</th>
                         <th>Value</th>
                     </tr>
-                    @foreach ($resultDP['items'] as $itemIndex)
+                    @foreach ($resultDP['items'] as $item)
                         <tr>
-                            <td>{{ $labels[$itemIndex] ?? 'No Label' }}</td>
-                            <td>{{ $weights[$itemIndex] }}</td>
-                            <td>{{ $values[$itemIndex] }}</td>
+                            <td>{{ $item['label'] ?? 'No Label' }}</td>
+                            <td>{{ $item['weight'] }}</td>
+                            <td>{{ $item['value'] }}</td>
                         </tr>
                     @endforeach
                     <tr>
