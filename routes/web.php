@@ -16,3 +16,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CoreController::class, 'index'])->name('core.index');
 Route::post('/process', [CoreController::class, 'process'])->name('core.process');
+Route::post('/download-remaining-csv', [CoreController::class, 'downloadRemainingItems'])->name('core.remaining.items');

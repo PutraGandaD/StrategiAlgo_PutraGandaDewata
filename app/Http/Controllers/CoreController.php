@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Core;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CoreController extends Controller
 {
@@ -18,14 +19,17 @@ class CoreController extends Controller
     public function process(Request $request) {
         $file = $request->file('csv_file');
         $capacity = $request->input('capacity');
-        list($weights, $values, $labels) = $this->readCsvFile($file->getRealPath());
+        list($weights, $values, $labels, $totalItems) = $this->readCsvFile($file->getRealPath());
 
         $resultGDW = $this->knapsackGD_byWeight($weights, $values, $labels, $capacity);
         $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $capacity);
         $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $capacity);
         $resultDP = $this->knapsackDP($weights, $values, $capacity);
 
-        return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels'));
+        $remainingItems = $this->getRemainingItems($weights, $values, $labels, $resultDP);
+        //dd($remainingItems);
+
+        return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels', 'remainingItems', 'totalItems', 'capacity'));
     }
 
     private function readCsvFile($filepath)
@@ -34,6 +38,7 @@ class CoreController extends Controller
         $values = []; // value of each fruit
         $labels = []; // label of the fruit
         $sizes = [];
+        $totalItems = 0;
         if (($handle = fopen($filepath, 'r')) !== FALSE) {
             $header = fgetcsv($handle, 1000, ",");
             $weightIndex = array_search('Weight (g)', $header);
@@ -58,11 +63,13 @@ class CoreController extends Controller
                 $values[] = (float)$value;
                 $sizes[] = $size;
                 $labels[] = $label;
+
+                $totalItems++;
             }
             fclose($handle);
             //dd($values);
         }
-        return [$weights, $values, $labels];
+        return [$weights, $values, $labels, $totalItems];
     }
 
     public function knapsackGD_byWeight($weights, $values, $labels, $capacity) {
@@ -75,19 +82,22 @@ class CoreController extends Controller
         $totalWeight = 0.0;
         $totalValue = 0.0;
         $itemsIncluded = [];
+        $totalItems = 0;
 
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
                 $itemsIncluded[] = $item;
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
+                $totalItems++;
             }
         }
 
         return [
             'items' => $itemsIncluded,
             'total_value' => $totalValue,
-            'total_weight' => $totalWeight
+            'total_weight' => $totalWeight,
+            'total_items' => $totalItems
         ];
     }
 
@@ -101,19 +111,22 @@ class CoreController extends Controller
         $totalWeight = 0.0;
         $totalValue = 0.0;
         $itemsIncluded = [];
+        $totalItems = 0;
 
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
                 $itemsIncluded[] = $item;
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
+                $totalItems++;
             }
         }
 
         return [
             'items' => $itemsIncluded,
             'total_value' => $totalValue,
-            'total_weight' => $totalWeight
+            'total_weight' => $totalWeight,
+            'total_items' => $totalItems
         ];
     }
 
@@ -127,23 +140,26 @@ class CoreController extends Controller
         $totalWeight = 0.0;
         $totalValue = 0.0;
         $itemsIncluded = [];
+        $totalItems = 0;
 
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
                 $itemsIncluded[] = $item;
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
+                $totalItems++;
             }
         }
 
         return [
             'items' => $itemsIncluded,
             'total_value' => $totalValue,
-            'total_weight' => $totalWeight
+            'total_weight' => $totalWeight,
+            'total_items' => $totalItems
         ];
     }
 
-    private function knapsackDP(array $weights, array $values, int $capacity): array
+    public function knapsackDP(array $weights, array $values, int $capacity): array
     {
         $n = count($weights); // number of items
 
@@ -174,10 +190,11 @@ class CoreController extends Controller
             'items' => $includedItems,
             'total_value' => $dp[$n][$capacity],
             'total_weight' => $totalWeight,
+            'total_items' => count($includedItems)
         ];
     }
 
-    private function backtrackDP(array $weights, array $included, int $capacity, int $currentIndex, int &$totalWeight): array
+    public function backtrackDP(array $weights, array $included, int $capacity, int $currentIndex, int &$totalWeight): array
     {
         $includedItems = [];
         if ($currentIndex === 0 || $capacity === 0) {
@@ -191,6 +208,53 @@ class CoreController extends Controller
         } else {
             return $this->backtrackDP($weights, $included, $capacity, $currentIndex - 1, $totalWeight);
         }
+    }
+
+    public function getRemainingItems($weights, $values, $labels, $resultDP) {
+        $itemsArray = $resultDP['items'];
+        //dd($itemsArray);
+
+        $remainingItems = [];
+        for ($i = 0; $i < count($weights); $i++) {
+            if (!in_array($i, $itemsArray)) {
+                $remainingItems[] = [
+                    'weight' => $weights[$i],
+                    'value' => $values[$i],
+                    'label' => $labels[$i],
+                ];
+            }
+        }
+        return $remainingItems;
+    }
+
+    public function downloadRemainingItems(Request $request)
+    {
+        $remainingItems = json_decode($request->input('remainingItems'), true);
+
+        // Generate CSV content (similar logic as in getRemainingItems)
+        $csvContent = "";
+
+        if (!empty($remainingItems)) {
+            $csvHeader = array_keys($remainingItems[0]);
+            $csvContent .= implode(",", $csvHeader) . "\n";
+
+            foreach ($remainingItems as $item) {
+                $csvContent .= implode(",", $item) . "\n";
+            }
+
+            $filename = "remaining_oranges.csv";
+            $response = new StreamedResponse(function () use ($csvContent) {
+                echo $csvContent;
+            });
+            $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+            $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+            $response->send();
+        return $response; // Stop further processing (optional)
+    }
+
+    // Handle scenario where there are no oranges (optional)
+    return redirect()->back()->with('message', 'No remaining oranges to download');
     }
 
     /**
