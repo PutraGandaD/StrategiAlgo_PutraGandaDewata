@@ -1,4 +1,37 @@
-<!DOCTYPE html>
+@extends('layout.main')
+
+@section('content')
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <div class="white-box">
+            <h3 class="box-title mb-4">Hasil dengan Dynamic Programming</h3>
+            <div class="table-responsive">
+                <table class="table text-nowrap">
+                    <tr>
+                        <th>Label</th>
+                        <th>Weight (g)</th>
+                        <th>Value</th>
+                    </tr>
+                    @foreach ($resultDP['items'] as $itemIndex)
+                        <tr>
+                            <td>{{ $labels[$itemIndex] ?? 'No Label' }}</td>
+                            <td>{{ $weights[$itemIndex] }}</td>
+                            <td>{{ $values[$itemIndex] }}</td>
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <th>Total</th>
+                        <th>{{ $resultDP['total_weight'] }}</th>
+                        <th>{{ $resultDP['total_value'] }}</th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+{{-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -67,4 +100,4 @@
     </table>
     <a href="{{ route('core.index') }}">Back</a>
 </body>
-</html>
+</html> --}}

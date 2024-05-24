@@ -208,8 +208,8 @@
             <!-- ============================================================== -->
             <!-- footer -->
             <!-- ============================================================== -->
-            <footer class="footer text-center"> 2021 © Ample Admin brought to you by <a
-                    href="https://www.wrappixel.com/">wrappixel.com</a>
+            <footer class="footer text-center"> © 2021 UI/UX by Ample Admin brought to you by <a
+                    href="https://www.wrappixel.com/">wrappixel.com</a>, © 2021 Program by Putra Ganda Dewata
             </footer>
             <!-- ============================================================== -->
             <!-- End footer -->

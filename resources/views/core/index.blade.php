@@ -1,15 +1,32 @@
 @extends('layout.main')
 
 @section('content')
-<h1>Knapsack Problem</h1>
-        <form action="{{ route('core.process') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <label for="csv_file">Upload CSV File:</label>
-            <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+<div class="row">
+    <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+        <div class="white-box">
+            <h3 class="box-title mb-4">Input Data</h3>
+            <form action="{{ route('core.process') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-            <label for="capacity">Enter Knapsack Capacity:</label>
-            <input type="number" id="capacity" name="capacity" step="0.01" required>
+                <div class="form-group mb-3">
+                    <label for="csv_file" class="col-md-12 p-0">Upload CSV File:</label>
+                    <input class="form-control p-0 border-0" type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                </div>
 
-            <button type="submit">Submit</button>
-        </form>
+                <div class="form-group mb-4">
+                    <label for="capacity" class="col-md-12 p-0">Kapasitas / Berat Maksimal Keranjang (gram)</label>
+                    <div class="col-md-12 border-bottom p-0">
+                        <input type="number" placeholder="Input kapasitas / berat maksimal keranjang disini..." step="0.01" class="form-control p-0 border-0" name="capacity" id="capacity">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button class="btn btn-primary" type="submit">Hitung</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

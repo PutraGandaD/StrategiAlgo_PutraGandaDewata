@@ -40,16 +40,20 @@ class CoreController extends Controller
             $sizeIndex = array_search('Size (cm)', $header);
             $qualityIndex = array_search('Quality (1-5)', $header);
             $labelIndex = array_search('labels', $header);
+            $blemishesIndex = array_search('Blemishes (Y/N)', $header);
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $weight = $data[$weightIndex]; // convert to float
                 $size = $data[$sizeIndex]; // convert to float
                 $quality = $data[$qualityIndex];
                 $label = $data[$labelIndex];
+                $blemishes = $data[$blemishesIndex];
 
                 $value = $quality;
+                if (substr($blemishes, 0, 1) == 'Y') {
+                    $value += 0.1;
+                }
 
-                // Add the calculated values to arrays
                 $weights[] = $weight;
                 $values[] = (float)$value;
                 $sizes[] = $size;
@@ -62,10 +66,8 @@ class CoreController extends Controller
     }
 
     public function knapsackGD_byWeight($weights, $values, $labels, $capacity) {
-        // Combine weight, value, and label into single items array
         $items = array_map(null, $weights, $values, $labels);
 
-        // Sort items by weight in ascending order
         usort($items, function($a, $b) {
             return $a[0] <=> $b[0];
         });
@@ -90,10 +92,8 @@ class CoreController extends Controller
     }
 
     public function knapsackGD_byValue($weights, $values, $labels, $capacity) {
-        // Combine weight, value, and label into single items array
         $items = array_map(null, $weights, $values, $labels);
 
-        // Sort items by value in descending order
         usort($items, function($a, $b) {
             return $b[1] <=> $a[1];
         });
@@ -118,10 +118,8 @@ class CoreController extends Controller
     }
 
     public function knapsackGD_byDensity($weights, $values, $labels, $capacity) {
-        // Combine weight, value, and label into single items array
         $items = array_map(null, $weights, $values, $labels);
 
-        // Sort items by density (value/weight) in descending order
         usort($items, function($a, $b) {
             return ($b[1] / $b[0]) <=> ($a[1] / $a[0]);
         });
@@ -149,18 +147,14 @@ class CoreController extends Controller
     {
         $n = count($weights); // number of items
 
-        // Create a table to store maximum achievable values and a table to track included items
         $dp = array_fill(0, $n + 1, array_fill(0, $capacity + 1, 0));
         $included = array_fill(0, $n + 1, array_fill(0, $capacity + 1, false));
 
-        // Fill the DP table for all capacities and items
         for ($i = 1; $i <= $n; $i++) {
             for ($w = 1; $w <= $capacity; $w++) {
                 if ($weights[$i - 1] > $w) {
-                    // If item weight is greater than capacity, inherit from previous item
                     $dp[$i][$w] = $dp[$i - 1][$w];
                 } else {
-                    // Choose the maximum value between including or excluding the current item
                     $excludeValue = $dp[$i - 1][$w];
                     $includeValue = $values[$i - 1] + $dp[$i - 1][$w - $weights[$i - 1]];
                     if ($includeValue > $excludeValue) {
@@ -173,7 +167,6 @@ class CoreController extends Controller
             }
         }
 
-        // Calculate the total weight based on included items during backtracking
         $totalWeight = 0;
         $includedItems = $this->backtrackDP($weights, $included, $capacity, $n, $totalWeight);
 
@@ -191,13 +184,11 @@ class CoreController extends Controller
             return $includedItems;
         }
 
-        // If the current item is included, update total weight and backtrack
         if ($included[$currentIndex][$capacity]) {
             $totalWeight += $weights[$currentIndex - 1];
             $includedItems[] = $currentIndex - 1;
             return array_merge($includedItems, $this->backtrackDP($weights, $included, $capacity - $weights[$currentIndex - 1], $currentIndex - 1, $totalWeight));
         } else {
-            // If the current item is excluded, backtrack without it
             return $this->backtrackDP($weights, $included, $capacity, $currentIndex - 1, $totalWeight);
         }
     }
