@@ -46,6 +46,7 @@ class CoreController extends Controller
             $qualityIndex = array_search('Quality (1-5)', $header);
             $labelIndex = array_search('labels', $header);
             $blemishesIndex = array_search('Blemishes (Y/N)', $header);
+            $valuesIndex = array_search('value', $header);
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $weight = $data[$weightIndex]; // convert to float
@@ -54,9 +55,15 @@ class CoreController extends Controller
                 $label = $data[$labelIndex];
                 $blemishes = $data[$blemishesIndex];
 
-                $value = $quality;
-                if (substr($blemishes, 0, 1) == 'N') {
-                    $value += 1.0;
+                $value = 0;
+
+                if($valuesIndex != null) {
+                    $value = $data[$valuesIndex];
+                } else {
+                    $value = $quality;
+                    if (substr($blemishes, 0, 1) == 'N') {
+                        $value += 1.0;
+                    }
                 }
 
                 $weights[] = $weight;
@@ -206,8 +213,8 @@ class CoreController extends Controller
             $totalWeight += $weights[$currentIndex - 1];
             $includedItems[] = [
                 'index' => $currentIndex - 1,
-                'weight' => $weights[$currentIndex - 1],
-                'label' => $labels[$currentIndex - 1], // Add labels
+                'Weight (g)' => $weights[$currentIndex - 1],
+                'labels' => $labels[$currentIndex - 1], // Add labels
                 'value' => $values[$currentIndex - 1], // Add quality
             ];
             return array_merge($includedItems, $this->backtrackDP($weights, $included, $values, $labels, $capacity - $weights[$currentIndex - 1], $currentIndex - 1, $totalWeight));
@@ -230,9 +237,9 @@ class CoreController extends Controller
             }
             if (!$found) {
                 $remainingItems[] = [
-                    'weight' => $weights[$index],
+                    'Weight (g)' => $weights[$index],
                     'value' => $values[$index],
-                    'label' => $label,
+                    'labels' => $label,
                 ];
             }
         }

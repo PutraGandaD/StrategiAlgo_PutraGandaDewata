@@ -14,9 +14,9 @@
                 </div>
 
                 <div class="form-group mb-4">
-                    <label for="capacity" class="col-md-12 p-0">Kapasitas / Berat Maksimal Keranjang (dalam gram)</label>
+                    <label for="capacity" class="col-md-12 p-0">Berat Maksimal Keranjang (dalam gram)</label>
                     <div class="col-md-12 border-bottom p-0">
-                        <input type="number" placeholder="Input kapasitas / berat maksimal keranjang disini..." step="0.01" class="form-control p-0 border-0" name="capacity" id="capacity">
+                        <input type="number" placeholder="Input berat maksimal keranjang disini..." step="0.01" class="form-control p-0 border-0" name="capacity" id="capacity">
                     </div>
                 </div>
 

@@ -68,8 +68,8 @@
                     </tr>
                     @foreach ($resultDP['items'] as $item)
                         <tr>
-                            <td>{{ $item['label'] ?? 'No Label' }}</td>
-                            <td>{{ $item['weight'] }}</td>
+                            <td>{{ $item['labels'] ?? 'No Label' }}</td>
+                            <td>{{ $item['Weight (g)'] }}</td>
                             <td>{{ $item['value'] }}</td>
                         </tr>
                     @endforeach
