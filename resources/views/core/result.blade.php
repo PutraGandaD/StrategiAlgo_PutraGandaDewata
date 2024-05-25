@@ -55,31 +55,56 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-lg-12 col-sm-12">
-        <div class="white-box">
-            <h3 class="box-title mb-4">Hasil Dynamic Programming</h3>
-            <div class="table-responsive">
-                <table class="table text-nowrap">
+<div class="col-lg-12 col-sm-12">
+    <div class="white-box">
+        <h3 class="box-title mb-4">Hasil Dynamic Programming</h3>
+        <div class="table-responsive">
+            <table class="table text-nowrap">
+                <tr>
+                    <th>Label</th>
+                    <th>Weight (g)</th>
+                    <th>Value</th>
+                </tr>
+                @foreach ($resultDP['items'] as $item)
                     <tr>
-                        <th>Label</th>
-                        <th>Weight (g)</th>
-                        <th>Value</th>
+                        <td>{{ $item['labels'] ?? 'No Label' }}</td>
+                        <td>{{ $item['Weight (g)'] }}</td>
+                        <td>{{ $item['value'] }}</td>
                     </tr>
-                    @foreach ($resultDP['items'] as $item)
-                        <tr>
-                            <td>{{ $item['labels'] ?? 'No Label' }}</td>
-                            <td>{{ $item['Weight (g)'] }}</td>
-                            <td>{{ $item['value'] }}</td>
-                        </tr>
-                    @endforeach
+                @endforeach
+                <tr>
+                    <th>Total</th>
+                    <th>{{ $resultDP['total_weight'] }}</th>
+                    <th>{{ $resultDP['total_value'] }}</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12 col-sm-12">
+    <div class="white-box">
+        <h3 class="box-title mb-4">Hasil Greedy By Weight</h3>
+        <div class="table-responsive">
+            <table class="table text-nowrap">
+                <tr>
+                    <th>Label</th>
+                    <th>Weight (g)</th>
+                    <th>Value</th>
+                </tr>
+                @foreach ($resultGDW['items'] as $item)
                     <tr>
-                        <th>Total</th>
-                        <th>{{ $resultDP['total_weight'] }}</th>
-                        <th>{{ $resultDP['total_value'] }}</th>
+                        <td>{{ $item['labels'] ?? 'No Label' }}</td>
+                        <td>{{ $item['Weight (g)'] }}</td>
+                        <td>{{ $item['value'] }}</td>
                     </tr>
-                </table>
-            </div>
+                @endforeach
+                <tr>
+                    <th>Total</th>
+                    <th>{{ $resultGDW['total_weight'] }}</th>
+                    <th>{{ $resultGDW['total_value'] }}</tnh>
+                </tr>
+            </table>
         </div>
     </div>
 </div>

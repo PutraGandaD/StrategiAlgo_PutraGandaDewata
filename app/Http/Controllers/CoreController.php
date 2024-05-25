@@ -91,14 +91,23 @@ class CoreController extends Controller
         $itemsIncluded = [];
         $totalItems = 0;
 
+        //dd($items);
+
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
-                $itemsIncluded[] = $item;
+                // $itemsIncluded[] = $item;
+                $itemsIncluded[] = [
+                    'Weight (g)' => $item[0],
+                    'value' => $item[1],
+                    'labels' => $item[2]
+                ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
                 $totalItems++;
             }
         }
+
+        //dd($itemsIncluded);
 
         return [
             'items' => $itemsIncluded,
@@ -122,7 +131,12 @@ class CoreController extends Controller
 
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
-                $itemsIncluded[] = $item;
+                //$itemsIncluded[] = $item;
+                $itemsIncluded[] = [
+                    'Weight (g)' => $item[0],
+                    'value' => $item[1],
+                    'labels' => $item[2]
+                ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
                 $totalItems++;
@@ -151,7 +165,12 @@ class CoreController extends Controller
 
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
-                $itemsIncluded[] = $item;
+                //$itemsIncluded[] = $item;
+                $itemsIncluded[] = [
+                    'Weight (g)' => $item[0],
+                    'value' => $item[1],
+                    'labels' => $item[2]
+                ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
                 $totalItems++;
