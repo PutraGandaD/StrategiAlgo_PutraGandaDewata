@@ -27,6 +27,16 @@
                 </div>
             </form>
         </div>
+
+        <div class="white-box">
+            <h2 class="box-title mb-4">Dataset</h2>
+            <a href="https://firebasestorage.googleapis.com/v0/b/fir-withcreapi.appspot.com/o/updated_items.csv?alt=media&token=402f63eb-59e8-4b58-87b8-78524ddc2bda">
+                <button class="btn btn-primary">Download Dataset</button>
+            </a>
+            <a href="https://www.kaggle.com/datasets/shruthiiiee/orange-quality">
+                <button class="btn btn-primary">Sumber Dataset</button>
+            </a>
+        </div>
     </div>
 </div>
 @endsection
