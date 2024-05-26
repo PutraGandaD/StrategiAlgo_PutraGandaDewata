@@ -19,14 +19,16 @@ class CoreController extends Controller
     public function process(Request $request) {
         $file = $request->file('csv_file');
         $capacity = $request->input('capacity');
-        list($weights, $values, $labels, $totalItems) = $this->readCsvFile($file->getRealPath());
+        list($weights, $values, $labels, $quality, $blemishes, $totalItems) = $this->readCsvFile($file->getRealPath());
 
-        $resultGDW = $this->knapsackGD_byWeight($weights, $values, $labels, $capacity);
-        $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $capacity);
-        $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $capacity);
-        $resultDP = $this->knapsackDP($weights, $values, $labels, $capacity);
+        $resultGDW = $this->knapsackGD_byWeight($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $resultDP = $this->knapsackDP($weights, $values, $labels, $quality, $blemishes, $capacity);
 
-        $remainingItems = $this->getRemainingItems($weights, $values, $labels, $resultDP);
+        //dd($resultDP);
+
+        $remainingItems = $this->getRemainingItems($weights, $values, $labels, $quality, $blemishes, $resultDP);
         //dd($resultGDW);
 
         return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels', 'remainingItems', 'totalItems', 'capacity'));
@@ -38,6 +40,8 @@ class CoreController extends Controller
         $values = []; // value of each fruit
         $labels = []; // label of the fruit
         $sizes = [];
+        $blemishes = [];
+        $quality = [];
         $totalItems = 0;
         if (($handle = fopen($filepath, 'r')) !== FALSE) {
             $header = fgetcsv($handle, 1000, ",");
@@ -49,38 +53,41 @@ class CoreController extends Controller
             $valuesIndex = array_search('value', $header);
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $weight = $data[$weightIndex]; // convert to float
-                $size = $data[$sizeIndex]; // convert to float
-                $quality = $data[$qualityIndex];
-                $label = $data[$labelIndex];
-                $blemishes = $data[$blemishesIndex];
+                $weight_each = $data[$weightIndex]; // convert to float
+                $size_each = $data[$sizeIndex]; // convert to float
+                $quality_each = $data[$qualityIndex];
+                $label_each = $data[$labelIndex];
+                $blemishes_each = $data[$blemishesIndex];
 
-                $value = 0;
+                $value = 0.0;
 
                 if($valuesIndex != null) {
                     $value = $data[$valuesIndex];
                 } else {
-                    $value = $quality;
-                    if (substr($blemishes, 0, 1) == 'N') {
+                    $value = $quality_each;
+                    if (substr($blemishes_each, 0, 1) == 'N') {
                         $value += 1.0;
                     }
                 }
 
-                $weights[] = $weight;
+                $weights[] = $weight_each;
                 $values[] = (float)$value;
-                $sizes[] = $size;
-                $labels[] = $label;
+                $sizes[] = $size_each;
+                $labels[] = $label_each;
+                $quality[] = $quality_each;
+                $blemishes[] = $blemishes_each;
 
                 $totalItems++;
             }
             fclose($handle);
             //dd($values);
         }
-        return [$weights, $values, $labels, $totalItems];
+        return [$weights, $values, $labels, $quality, $blemishes, $totalItems];
     }
 
-    public function knapsackGD_byWeight($weights, $values, $labels, $capacity) {
-        $items = array_map(null, $weights, $values, $labels);
+    public function knapsackGD_byWeight($weights, $values, $labels, $quality, $blemishes, $capacity) {
+        $items = array_map(null, $weights, $values, $labels, $quality, $blemishes);
+        //dd($items);
 
         usort($items, function($a, $b) {
             return $a[0] <=> $b[0];
@@ -97,9 +104,11 @@ class CoreController extends Controller
             if ($totalWeight + $item[0] <= $capacity) {
                 // $itemsIncluded[] = $item;
                 $itemsIncluded[] = [
+                    'labels' => $item[2],
                     'Weight (g)' => $item[0],
-                    'value' => $item[1],
-                    'labels' => $item[2]
+                    'Blemishes (Y/N)' => $item[4],
+                    'Quality (1-5)' => $item[3],
+                    'value' => $item[1]
                 ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
@@ -117,8 +126,8 @@ class CoreController extends Controller
         ];
     }
 
-    public function knapsackGD_byValue($weights, $values, $labels, $capacity) {
-        $items = array_map(null, $weights, $values, $labels);
+    public function knapsackGD_byValue($weights, $values, $labels, $quality, $blemishes, $capacity) {
+        $items = array_map(null, $weights, $values, $labels, $quality, $blemishes);
 
         usort($items, function($a, $b) {
             return $b[1] <=> $a[1];
@@ -133,9 +142,11 @@ class CoreController extends Controller
             if ($totalWeight + $item[0] <= $capacity) {
                 //$itemsIncluded[] = $item;
                 $itemsIncluded[] = [
+                    'labels' => $item[2],
                     'Weight (g)' => $item[0],
-                    'value' => $item[1],
-                    'labels' => $item[2]
+                    'Blemishes (Y/N)' => $item[4],
+                    'Quality (1-5)' => $item[3],
+                    'value' => $item[1]
                 ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
@@ -151,8 +162,8 @@ class CoreController extends Controller
         ];
     }
 
-    public function knapsackGD_byDensity($weights, $values, $labels, $capacity) {
-        $items = array_map(null, $weights, $values, $labels);
+    public function knapsackGD_byDensity($weights, $values, $labels, $quality, $blemishes, $capacity) {
+        $items = array_map(null, $weights, $values, $quality, $blemishes, $labels);
 
         usort($items, function($a, $b) {
             return ($b[1] / $b[0]) <=> ($a[1] / $a[0]);
@@ -167,9 +178,11 @@ class CoreController extends Controller
             if ($totalWeight + $item[0] <= $capacity) {
                 //$itemsIncluded[] = $item;
                 $itemsIncluded[] = [
+                    'labels' => $item[2],
                     'Weight (g)' => $item[0],
-                    'value' => $item[1],
-                    'labels' => $item[2]
+                    'Blemishes (Y/N)' => $item[4],
+                    'Quality (1-5)' => $item[3],
+                    'value' => $item[1]
                 ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
@@ -185,7 +198,7 @@ class CoreController extends Controller
         ];
     }
 
-    public function knapsackDP(array $weights, array $values, array $labels, int $capacity): array
+    public function knapsackDP(array $weights, array $values, array $labels, array $quality, array $blemishes, int $capacity): array
     {
         $n = count($weights); // number of items
 
@@ -210,7 +223,7 @@ class CoreController extends Controller
         }
 
         $totalWeight = 0;
-        $includedItems = $this->backtrackDP($weights, $included, $values, $labels, $capacity, $n, $totalWeight);
+        $includedItems = $this->backtrackDP($weights, $included, $values, $labels, $quality, $blemishes, $capacity, $n, $totalWeight);
         //dd($includedItems);
 
         return [
@@ -221,7 +234,7 @@ class CoreController extends Controller
         ];
     }
 
-    public function backtrackDP(array $weights, array $included, array $values, array $labels, int $capacity, int $currentIndex, int &$totalWeight): array
+    public function backtrackDP(array $weights, array $included, array $values, array $labels, array $quality, array $blemishes, int $capacity, int $currentIndex, int &$totalWeight): array
     {
         $includedItems = [];
         if ($currentIndex === 0 || $capacity === 0) {
@@ -232,18 +245,21 @@ class CoreController extends Controller
             $totalWeight += $weights[$currentIndex - 1];
             $includedItems[] = [
                 'index' => $currentIndex - 1,
-                'Weight (g)' => $weights[$currentIndex - 1],
                 'labels' => $labels[$currentIndex - 1], // Add labels
+                'Weight (g)' => $weights[$currentIndex - 1],
+                'Blemishes (Y/N)' => $blemishes[$currentIndex - 1],
+                'Quality (1-5)' => $quality[$currentIndex - 1],
                 'value' => $values[$currentIndex - 1], // Add quality
             ];
-            return array_merge($includedItems, $this->backtrackDP($weights, $included, $values, $labels, $capacity - $weights[$currentIndex - 1], $currentIndex - 1, $totalWeight));
+            return array_merge($includedItems, $this->backtrackDP($weights, $included, $values, $labels, $quality, $blemishes, $capacity - $weights[$currentIndex - 1], $currentIndex - 1, $totalWeight));
         } else {
-            return $this->backtrackDP($weights, $included, $values, $labels, $capacity, $currentIndex - 1, $totalWeight);
+            return $this->backtrackDP($weights, $included, $values, $labels, $quality, $blemishes, $capacity, $currentIndex - 1, $totalWeight);
         }
     }
 
-    public function getRemainingItems($weights, $values, $labels, $resultDP) {
+    public function getRemainingItems($weights, $values, $labels, $quality, $blemishes, $resultDP) {
         $itemsArray = $resultDP['items'];
+        //dd($itemsArray);
 
         $remainingItems = [];
         foreach ($labels as $index => $label) {
@@ -256,9 +272,11 @@ class CoreController extends Controller
             }
             if (!$found) {
                 $remainingItems[] = [
-                    'Weight (g)' => $weights[$index],
-                    'value' => $values[$index],
                     'labels' => $label,
+                    'Weight (g)' => $weights[$index],
+                    'Blemishes (Y/N)' => $blemishes[$index],
+                    'Quality (1-5)' => $quality[$index],
+                    'value' => $values[$index],
                 ];
             }
         }
