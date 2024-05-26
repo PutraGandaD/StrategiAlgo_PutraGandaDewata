@@ -163,7 +163,7 @@ class CoreController extends Controller
     }
 
     public function knapsackGD_byDensity($weights, $values, $labels, $quality, $blemishes, $capacity) {
-        $items = array_map(null, $weights, $values, $quality, $blemishes, $labels);
+        $items = array_map(null, $weights, $values, $labels, $quality, $blemishes);
 
         usort($items, function($a, $b) {
             return ($b[1] / $b[0]) <=> ($a[1] / $a[0]);

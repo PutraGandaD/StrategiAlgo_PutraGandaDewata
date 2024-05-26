@@ -1,9 +1,10 @@
 @extends('layout.main')
+@section('navbar-back', 'Kembali ke Beranda')
 
 @section('content')
 <div class="col-lg-12 col-sm-12">
     <div class="white-box">
-        <h2 class="box-title mb-4">Informasi Jeruk</h2>
+        <h2 class="box-title mb-4">Informasi dari User Input</h2>
         <h4>Total Jeruk (dari file CSV) : {{ $totalItems }} buah</h4>
         <h4>Berat Keranjang yang akan digunakan untuk menampung jeruk (dalam gram) : {{ $capacity }} gram</h4>
     </div>
@@ -115,6 +116,72 @@
                     <th></th>
                     <th></th>
                     <th>{{ $resultGDW['total_value'] }}</tnh>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12 col-sm-12">
+    <div class="white-box">
+        <h3 class="box-title mb-4">Hasil Greedy By Value</h3>
+        <div class="table-responsive">
+            <table class="table text-nowrap">
+                <tr>
+                    <th>Label</th>
+                    <th>Weight (g)</th>
+                    <th>Blemishes (Y/N)</th>
+                    <th>Quality (1-5)</th>
+                    <th>Value</th>
+                </tr>
+                @foreach ($resultGDV['items'] as $item)
+                    <tr>
+                        <td>{{ $item['labels'] ?? 'No Label' }}</td>
+                        <td>{{ $item['Weight (g)'] }}</td>
+                        <td>{{ $item['Blemishes (Y/N)'] }}</td>
+                        <td>{{ $item['Quality (1-5)'] }}</td>
+                        <td>{{ $item['value'] }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <th>Total</th>
+                    <th>{{ $resultGDV['total_weight'] }}</th>
+                    <th></th>
+                    <th></th>
+                    <th>{{ $resultGDV['total_value'] }}</tnh>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12 col-sm-12">
+    <div class="white-box">
+        <h3 class="box-title mb-4">Hasil Greedy By Density</h3>
+        <div class="table-responsive">
+            <table class="table text-nowrap">
+                <tr>
+                    <th>Label</th>
+                    <th>Weight (g)</th>
+                    <th>Blemishes (Y/N)</th>
+                    <th>Quality (1-5)</th>
+                    <th>Value</th>
+                </tr>
+                @foreach ($resultGDD['items'] as $item)
+                    <tr>
+                        <td>{{ $item['labels'] ?? 'No Label' }}</td>
+                        <td>{{ $item['Weight (g)'] }}</td>
+                        <td>{{ $item['Blemishes (Y/N)'] }}</td>
+                        <td>{{ $item['Quality (1-5)'] }}</td>
+                        <td>{{ $item['value'] }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <th>Total</th>
+                    <th>{{ $resultGDD['total_weight'] }}</th>
+                    <th></th>
+                    <th></th>
+                    <th>{{ $resultGDD['total_value'] }}</tnh>
                 </tr>
             </table>
         </div>

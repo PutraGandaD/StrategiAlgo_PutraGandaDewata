@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
         <div class="white-box">
-            <h2 class="box-title mb-4">Perhitungan Jeruk dalam Keranjang untuk Transport</h2>
+            <h2 class="box-title mb-4">Perhitungan Jeruk di dalam Keranjang untuk Transport</h2>
             <form action="{{ route('core.process') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -22,7 +22,7 @@
 
                 <div class="form-group">
                     <div class="col-sm-12">
-                        <button class="btn btn-primary" type="submit">Hitung</button>
+                        <button class="btn btn-primary" type="submit">Hitung dengan DP dan GD</button>
                     </div>
                 </div>
             </form>
