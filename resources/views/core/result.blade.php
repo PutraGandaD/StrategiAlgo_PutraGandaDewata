@@ -17,6 +17,7 @@
             <p>Total Value : {{ $resultDP['total_value'] }}</p>
             <p>Total Jeruk yang ditampung : {{ $resultDP['total_items'] }}</p>
             <p>Sisa Jeruk : {{ $totalItems - $resultDP['total_items'] }}</p>
+            <p>Waktu eksekusi perhitungan : {{ $timeDP }} detik</p>
             <form action="{{ route('core.remaining.items') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('POST')
@@ -32,6 +33,7 @@
             <p>Total Value : {{ $resultGDW['total_value'] }}</p>
             <p>Total Jeruk yang ditampung : {{ $resultGDW['total_items'] }}</p>
             <p>Sisa Jeruk : {{ $totalItems - $resultGDW['total_items'] }}</p>
+            <p>Waktu eksekusi perhitungan : {{ $timeGDW }} detik</p>
             <p></p>
         </div>
     </div>
@@ -42,6 +44,7 @@
             <p>Total Value : {{ $resultGDV['total_value'] }}</p>
             <p>Total Jeruk yang ditampung : {{ $resultGDV['total_items'] }}</p>
             <p>Sisa Jeruk : {{ $totalItems - $resultGDV['total_items'] }}</p>
+            <p>Waktu eksekusi perhitungan : {{ $timeGDV }} detik</p>
             <p></p>
         </div>
     </div>
@@ -52,6 +55,7 @@
             <p>Total Value : {{ $resultGDD['total_value'] }}</p>
             <p>Total Jeruk yang ditampung : {{ $resultGDD['total_items'] }}</p>
             <p>Sisa Jeruk : {{ $totalItems - $resultGDD['total_items'] }}</p>
+            <p>Waktu eksekusi perhitungan : {{ $timeGDD }} detik</p>
             <p></p>
         </div>
     </div>

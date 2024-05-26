@@ -21,17 +21,29 @@ class CoreController extends Controller
         $capacity = $request->input('capacity');
         list($weights, $values, $labels, $quality, $blemishes, $totalItems) = $this->readCsvFile($file->getRealPath());
 
+        $start = microtime(true);
         $resultGDW = $this->knapsackGD_byWeight($weights, $values, $labels, $quality, $blemishes, $capacity);
-        $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $quality, $blemishes, $capacity);
-        $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $quality, $blemishes, $capacity);
-        $resultDP = $this->knapsackDP($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $end = microtime(true);
+        $timeGDW = number_format($end - $start, 6);
 
-        //dd($resultDP);
+        $start = microtime(true);
+        $resultGDV = $this->knapsackGD_byValue($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $end = microtime(true);
+        $timeGDV = number_format($end - $start, 6);
+
+        $start = microtime(true);
+        $resultGDD = $this->knapsackGD_byDensity($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $end = microtime(true);
+        $timeGDD = number_format($end - $start, 6);
+
+        $start = microtime(true);
+        $resultDP = $this->knapsackDP($weights, $values, $labels, $quality, $blemishes, $capacity);
+        $end = microtime(true);
+        $timeDP = number_format($end - $start, 6);
 
         $remainingItems = $this->getRemainingItems($weights, $values, $labels, $quality, $blemishes, $resultDP);
-        //dd($resultGDW);
 
-        return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels', 'remainingItems', 'totalItems', 'capacity'));
+        return view('core.result', compact('resultDP', 'resultGDW', 'resultGDV', 'resultGDD', 'weights', 'values', 'labels', 'remainingItems', 'totalItems', 'capacity', 'timeGDW', 'timeGDV', 'timeGDD', 'timeDP'));
     }
 
     private function readCsvFile($filepath)
