@@ -170,6 +170,7 @@
                     <th>Blemishes (Y/N)</th>
                     <th>Quality (1-5)</th>
                     <th>Value</th>
+                    <th>Density</th>
                 </tr>
                 @foreach ($resultGDD['items'] as $item)
                     <tr>
@@ -178,6 +179,7 @@
                         <td>{{ $item['Blemishes (Y/N)'] }}</td>
                         <td>{{ $item['Quality (1-5)'] }}</td>
                         <td>{{ $item['value'] }}</td>
+                        <td>{{ $item['density'] }}</td>
                     </tr>
                 @endforeach
                 <tr>
