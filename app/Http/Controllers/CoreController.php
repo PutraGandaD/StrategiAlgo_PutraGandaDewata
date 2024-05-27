@@ -77,9 +77,6 @@ class CoreController extends Controller
                     $value = $data[$valuesIndex];
                 } else {
                     $value = $quality_each;
-                    if (substr($blemishes_each, 0, 1) == 'N') {
-                        $value += 1.0;
-                    }
                 }
 
                 $weights[] = $weight_each;
