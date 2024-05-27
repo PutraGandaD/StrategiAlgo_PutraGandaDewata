@@ -17,7 +17,7 @@ class CoreController extends Controller
     }
 
     public function process(Request $request) {
-        $file = $request->file('csv_file');
+        $file = $request->file('csv_file'); // baca file .csv
         $capacity = $request->input('capacity');
         list($weights, $values, $labels, $quality, $blemishes, $totalItems) = $this->readCsvFile($file->getRealPath());
 
@@ -186,12 +186,14 @@ class CoreController extends Controller
         foreach ($items as $item) {
             if ($totalWeight + $item[0] <= $capacity) {
                 //$itemsIncluded[] = $item;
+                $density = $item[1] / $item[0];
                 $itemsIncluded[] = [
                     'labels' => $item[2],
                     'Weight (g)' => $item[0],
                     'Blemishes (Y/N)' => $item[4],
                     'Quality (1-5)' => $item[3],
-                    'value' => $item[1]
+                    'value' => $item[1],
+                    'density' => $density
                 ];
                 $totalWeight += $item[0];
                 $totalValue += $item[1];
@@ -299,7 +301,6 @@ class CoreController extends Controller
     {
         $remainingItems = json_decode($request->input('remainingItems'), true);
 
-        // Generate CSV content (similar logic as in getRemainingItems)
         $csvContent = "";
 
         if (!empty($remainingItems)) {
@@ -318,11 +319,11 @@ class CoreController extends Controller
             $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
             $response->send();
-        return $response; // Stop further processing (optional)
-    }
+            return $response; // Stop further processing (optional)
+        }
 
-    // Handle scenario where there are no oranges (optional)
-    return redirect()->back()->with('message', 'No remaining oranges to download');
+        // Handle scenario where there are no oranges (optional)
+        return redirect()->back()->with('message', 'No remaining oranges to download');
     }
 
     /**
